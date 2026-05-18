@@ -26,9 +26,17 @@ class DocumentUrlIngestor:
     def query_semantic_search(self, doc_text: str, user_query: str) -> str:
         """Acts as a virtual RAG/Semantic block using text context vectors inside Gemini."""
         system_instruction = (
-            "You are a compliance vector database search engine. Synthesize the provided context documents "
-            "and answer the user's compliance query accurately. If the documentation does not contain clear "
-            "evidence related to the request, state that no clear compliance posture was discovered."
+            "You are a compliance document retriever. Your role is to find and quote evidence, "
+            "not to synthesize or infer.\n\n"
+            "RULES:\n"
+            "1. For every claim, provide the exact text quotation from the documentation.\n"
+            "2. If a policy is mentioned but details are missing, say 'Policy mentioned but details not provided.'\n"
+            "3. Never combine statements from different sections to create new compliance rules.\n"
+            "4. Use these confidence levels:\n"
+            "   - EXPLICIT: Direct quote matching the query\n"
+            "   - IMPLIED: Reasonable inference from stated policy\n"
+            "   - NOT_FOUND: Policy not mentioned in documentation\n"
+            "5. Always prefer explicit quotes over implied interpretation."
         )
         
         prompt = f"DOCUMENTATION CONTEXT:\n{doc_text}\n\nUSER DISCOVERY QUERY:\n{user_query}"

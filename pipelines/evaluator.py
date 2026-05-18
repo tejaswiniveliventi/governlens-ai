@@ -1,39 +1,44 @@
+import yaml
 from models.structures import ImplicitSchemaBlueprint
 
 class HipaasessmentEngine:
     def __init__(self):
-        self.high_risk_anchors = ["ssn", "mrn", "patient_id", "medicaid_no", "tax_id", "social_security"]
-        self.clinical_indicators = ["icd_code", "diagnosis", "prescription", "rxnorm", "clinical_notes"]
+        with open("config/governance_rules.yaml", "r") as f:
+            self.matrix = yaml.safe_load(f)["evaluator_matrices"]
 
     def analyze_risk(self, blueprint: ImplicitSchemaBlueprint, env_context: str) -> ImplicitSchemaBlueprint:
         if env_context != "Healthcare/Clinical App":
             return blueprint
+
+        # Resolve primary relational anchor mapping targets
+        linked_identity_tables = set()
+        for table in blueprint.tables:
+            t_name = table.table_name.lower()
+            if any(anchor in t_name for anchor in self.matrix["identity_anchors"]):
+                linked_identity_tables.add(table.table_name)
+
+        # Execute relational context proximity checks
+        for table in blueprint.tables:
+            is_anchored = table.table_name in linked_identity_tables
             
-        identity_tables = set()
-        for table in blueprint.tables:
-            table_name_lower = table.table_name.lower()
-            if "patient" in table_name_lower or "user" in table_name_lower or "member" in table_name_lower:
-                identity_tables.add(table.table_name)
-                
             for col in table.columns:
-                if col.column_name.lower() in self.high_risk_anchors:
-                    identity_tables.add(table.table_name)
-
-        # Apply relational proximity evaluation logic
-        for table in blueprint.tables:
-            is_relationally_linked = table.table_name in identity_tables
-
-            for col in table.columns:
-                name_lbl = col.column_name.lower()
+                c_name = col.column_name.lower()
                 
-                if name_lbl in self.high_risk_anchors or any(c in name_lbl for c in self.clinical_indicators):
+                # Baseline high risk structural rules
+                if any(match in c_name for match in ["ssn", "mrn", "patient_id", "medicaid"]):
                     col.sensitivity_tier = "Highly Sensitive"
-                    col.hipaa_rule_hit = "HIPAA Privacy Rule (§ 160.103) - Core Clinical PHI"
+                    col.hipaa_rule_hit = "HIPAA Safe Harbor Identifier"
+                    continue
                     
-                elif is_relationally_linked:
-                    if name_lbl in ["status", "notes", "comments", "status_flag", "narrative_summary"]:
-                        col.sensitivity_tier = "Moderately Sensitive"
-                        col.hipaa_rule_hit = "HIPAA Safe Harbor - Contextual Proximity Elevation"
-                        col.reasoning = "Escalated: Generic column field exists inside a dataset table linked directly to an identity anchor node."
-                        
+                # Skip known operational non-PHI tracking metrics
+                if any(safe in c_name for safe in self.matrix["safe_generic_fields"]):
+                    col.sensitivity_tier = "Low/Standard PII"
+                    continue
+                
+                # Relational elevation logic
+                if is_anchored or any(pat in c_name for pat in self.matrix["sensitive_context_patterns"]):
+                    col.sensitivity_tier = "Moderately Sensitive"
+                    col.hipaa_rule_hit = "PHI Context Linkage Rule"
+                    col.reasoning += " [Escalated via Relational Proximity Layer]"
+
         return blueprint

@@ -1,33 +1,32 @@
+import yaml
+import json
 from google import genai
 from google.genai import types
-from models.structures import ImplicitSchemaBlueprint
 from core.config import settings
+from models.structures import ImplicitSchemaBlueprint
 
 class TextExtractor:
     def __init__(self):
-        # Initializes the client with native GenAI bindings
+        with open("config/governance_rules.yaml", "r") as f:
+            self.rules = yaml.safe_load(f)
         self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
     def parse_text(self, context_payload: str) -> ImplicitSchemaBlueprint:
-        prompt = f"""
-        You are an elite Data Architecture and HIPAA Compliance Auditor.
-        Analyze the provided telemetry text payload. This may include code schemas, 
-        unstructured requirements documentation, or both in an intersection layout.
-        
-        Extract all implied logical database entities, attribute tables, and data fields.
-        If both a specifications document and a Git codebase layout are provided, map out 
-        the data architecture components mentioned in the code specifically through the lens 
-        of the compliance constraints stated in the documentation text.
-        """
+        instruction = self.rules["prompts"]["extractor_instruction"]
+        model_name = self.rules["system_settings"]["model_target"]
+        temp = self.rules["system_settings"]["temperature"]
         
         response = self.client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[prompt, context_payload],
+            model=model_name,
+            contents=f"PAYLOAD TO SCAPE:\n{context_payload}",
             config=types.GenerateContentConfig(
+                system_instruction=instruction,
+                temperature=temp,
                 response_mime_type="application/json",
                 response_schema=ImplicitSchemaBlueprint,
-                temperature=0.1
             ),
         )
-        # Parse output directly back into your verified Pydantic schema validation contract
-        return ImplicitSchemaBlueprint.model_validate_json(response.text)
+        
+        # Enforce validation structure contract via dynamic json payload handling
+        validated_data = json.loads(response.text)
+        return ImplicitSchemaBlueprint(**validated_data)

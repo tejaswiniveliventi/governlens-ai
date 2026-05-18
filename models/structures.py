@@ -1,18 +1,37 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional, Dict
+import yaml
+
+with open("config/governance_rules.yaml", "r") as f:
+    rules_cfg = yaml.safe_load(f)
+ALLOWED_TYPES = rules_cfg["extraction_rules"]["allowed_types"]
 
 class ExtractedColumn(BaseModel):
-    # Enforcing explicit naming conventions matching database properties
-    column_name: str = Field(description="The exact alphanumeric name of the structural database column or attribute attribute field.")
-    implied_type: str = Field(description="The determined technical data type context e.g., VARCHAR, INT, TIMESTAMP, TEXT.")
-    sensitivity_tier: str = Field(description="Must default strictly to one choice: 'Highly Sensitive', 'Moderately Sensitive', or 'Low/Standard PII'.")
-    hipaa_rule_hit: Optional[str] = Field(None, description="The explicit HIPAA Safe Harbor or Privacy Rule mapping violation context triggered.")
-    reasoning: str = Field(description="Detailed compliance justification explaining how the field exposure or relational status was computed.")
-    quote_from_source: Optional[str] = Field(None, description="Literal snippet quote isolated from the ingestion document text payload justifying the tier.")
+    column_name: str = Field(description="The exact variable or property field string.")
+    implied_type: str = Field(description="The matching technical data type context.")
+    quote_from_source: str = Field(description="Verbatim text excerpt confirming this field's presence.")
+    reasoning: str = Field(description="Deduction footprint tracking the extraction source location.")
+    sensitivity_tier: str = Field(default="Low/Standard PII")
+    hipaa_rule_hit: Optional[str] = Field(default=None)
+
+    @field_validator('implied_type')
+    @classmethod
+    def enforce_type_bounds(cls, value: str) -> str:
+        upper_val = value.upper()
+        if upper_val not in ALLOWED_TYPES:
+            return "UNSPECIFIED"
+        return upper_val
 
 class ExtractedTable(BaseModel):
-    table_name: str = Field(description="The verified alphanumeric name of the logical database table asset.")
-    columns: List[ExtractedColumn] = Field(description="The array grouping of all structural child attributes identified inside the entity schema.")
+    table_name: str = Field(description="Name of the logical database entity entity.")
+    columns: List[ExtractedColumn] = Field(description="Array of associated attributes parsed.")
+
+class ExtractionConfidenceMetrics(BaseModel):
+    overall_confidence: float = Field(ge=0.0, le=1.0)
+    schema_completeness: float = Field(ge=0.0, le=1.0)
+    field_accuracy: float = Field(ge=0.0, le=1.0)
+    compliance_basis: str
 
 class ImplicitSchemaBlueprint(BaseModel):
-    tables: List[ExtractedTable] = Field(description="The parent collection array hosting all structural metadata tables resolved by the pipeline.")
+    tables: List[ExtractedTable]
+    metrics: ExtractionConfidenceMetrics
