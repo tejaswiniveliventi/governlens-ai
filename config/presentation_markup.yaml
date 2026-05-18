@@ -1,29 +1,46 @@
+# config/presentation_markup.yaml
+
 ui_branding:
   title: "🛡️ GOVERNLENS AI"
-  caption: "Enterprise Upstream Privacy Guardrail — Intercepting Compliance Exposure Prior to Code Materialization"
+  caption: "Upstream Privacy Guardrail — Predicting Compliance Exposure in Jira & Confluence Before Code is Written"
 
 ui_styles:
+  # The '|' character tells the parser to preserve all newlines and spaces exactly as written
   custom_css: |
-    <style>
-      .stApp { background-color: #0b0f19; color: #f3f4f6; }
-      h1, h2, h3, h4 { color: #3b82f6 !important; font-family: 'Inter', sans-serif; }
-      div.stButton > button:first-child {
-        background-color: #f97316 !important; color: #ffffff !important;
-        border: none; font-weight: 600; border-radius: 6px;
-      }
-      /* Scale tab typography cleanly to look highly legible */
-      .stTabs [data-baseweb="tab"] { 
+    .stApp { 
+        background-color: #0b0f19; 
+        color: #f3f4f6; 
+    }
+    h1, h2, h3, h4 { 
+        color: #3b82f6 !important; 
+        font-family: 'Inter', sans-serif; 
+    }
+    div.stButton > button:first-child { 
+        background-color: #f97316 !important; 
+        color: #ffffff !important; 
+        border: none; 
+        font-weight: 600; 
+        border-radius: 6px; 
+    }
+    .stTabs [data-baseweb="tab"] { 
         color: #9ca3af !important; 
         font-weight: 600; 
-        font-size: 20px !important; 
-      }
-      .stTabs [aria-selected="true"] { color: #10b981 !important; border-bottom-color: #10b981 !important; }
-      .badge-crimson { background-color: #7f1d1d; color: #fca5a5; padding: 6px 12px; border-radius: 4px; font-weight: bold; border: 1px solid #f87171; display: inline-block; }
-      .badge-rust { background-color: #7c2d12; color: #fdba74; padding: 6px 12px; border-radius: 4px; font-weight: bold; border: 1px solid #fb923c; display: inline-block; }
-      .badge-emerald { background-color: #064e3b; color: #6ee7b7; padding: 6px 12px; border-radius: 4px; font-weight: bold; border: 1px solid #34d399; display: inline-block; }
-    </style>
+        font-size: 18px; 
+    }
+    .stTabs [aria-selected="true"] { 
+        color: #10b981 !important; 
+        border-bottom-color: #10b981 !important; 
+    }
+    div.stAlert { 
+        background-color: #1f2937 !important; 
+        border-left: 5px solid #3b82f6 !important; 
+        color: #f3f4f6 !important; 
+    }
 
 panels:
-  intake_header: "### 🔌 Automated Architecture & Intent Ingestion"
-  ledger_header: "### 📋 System Architectural Evaluation Logs"
-  empty_ledger: "No active compliance records verified in remote data warehouses."
+  intake_header: "### 🔌 Upstream Design Requirements Ingestion"
+  intake_subheader: "Analyze technical specification briefs and project architecture plans for early-stage compliance scoring."
+  option_a_header: "#### 📄 Step 1: Target Technical Blueprint Intent (Git URL / DDL Structure)"
+  option_b_header: "#### 📝 Step 2: Target Compliance Context (Confluence Spec / Product Requirements Document)"
+  ledger_header: "### 📊 Governance Compliance Audit Ledger"
+  empty_ledger: "No active architecture design plans evaluated or logged in your remote cloud tables yet."

@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import yaml
 from core.database import get_supabase_client
@@ -7,24 +8,31 @@ from pipelines.extractor import TextExtractor
 from pipelines.evaluator import HipaasessmentEngine
 from pipelines.reporter import ReportStorageEngine
 
-# Load styling from decoupled presentation configuration setup
+
+# Parse the externalized asset file
 with open("config/presentation_markup.yaml", "r") as f:
     markup = yaml.safe_load(f)
 
 st.set_page_config(page_title="GovernLens | Control Center", layout="wide")
 
-# FIX: Swapped out 'unsafe_with_html' parameter to solve the layout crash exception
-st.markdown(markup["ui_styles"]["custom_css"], unsafe_allow_html=True)
+# Inject the preserved multi-line CSS block straight into the view container
+st.markdown(f'<style>{markup["ui_styles"]["custom_css"]}</style>', unsafe_allow_html=True)
 
 st.title(markup["ui_branding"]["title"])
 st.caption(markup["ui_branding"]["caption"])
 st.markdown("---")
 
 supabase = get_supabase_client()
-tab_intake, tab_ledger = st.tabs([" Ingestion Control Room", "📊 Compliance Evaluation Reports"])
+tab_intake, tab_ledger = st.tabs(["📥 Ingestion Control Room", "📊 Compliance Evaluation Reports"])
 
+# ==============================================================================
+# TAB 1: DATA INGESTION ENGINE
+# ==============================================================================
 with tab_intake:
     st.markdown(markup["panels"]["intake_header"])
+    if "intake_subheader" in markup["panels"]:
+        st.caption(markup["panels"]["intake_subheader"])
+        
     col_input, col_info = st.columns([3, 2])
     
     with col_input:
@@ -32,10 +40,15 @@ with tab_intake:
             "Target Deployment Domain Environment Context:",
             ["Healthcare/Clinical App", "Internal HR/Operations", "General Marketing/B2C"]
         )
-        git_url = st.text_input("Public Git Repository Endpoint URL (.sql / ORM scripts):")
-        doc_url = st.text_input("Public Product Specification URI Link (Confluence / Wiki Portal):")
         
-        # Enforce reactive button locks directly via layout evaluations
+        # Dynamically pulls updated text variables from your decoupled presentation file
+        st.markdown(markup["panels"].get("option_a_header", "#### Option A: Audit Codebase Infrastructure Repository"))
+        git_url = st.text_input("Public Git Repository Endpoint URL (.sql or ORM definitions):", key="git_url_input")
+        
+        st.markdown(markup["panels"].get("option_b_header", "#### Option B: Audit Functional Requirements Documentation"))
+        doc_url = st.text_input("Public Product Specification URI Link (Confluence / Wiki Portal):", key="doc_url_input")
+        
+        # Enforce reactive button locks directly via layout evaluations to prevent blank execution threads
         has_git = bool(git_url.strip())
         has_doc = bool(doc_url.strip())
         button_locked = not (has_git or has_doc)
@@ -55,6 +68,7 @@ with tab_intake:
             "and evaluates changes strictly filtered against the functional spec parameters."
         )
 
+    # Ingestion Processing Loop Execution
     if trigger_analysis:
         with st.spinner("Processing automated ingestion tracks and executing safety matrices..."):
             try:
@@ -75,28 +89,44 @@ with tab_intake:
                     )
                     source_label = f"Intersection Scan: {git_url} + {doc_url}"
                 elif has_git:
-                    payload_text = f"ISOLATED CODE SCAN Blueprints:\n{git_payload}"
+                    # FIX: Inject clear instruction mode blocks to prompt code-only overrides for the TextExtractor
+                    payload_text = (
+                        f"ANALYSIS MODE: Isolated Code Schema Extraction\n\n"
+                        f"SECTION 1: IMPLEMENTED SCHEMA (from code)\n{git_payload}\n\n"
+                        f"CRITICAL INSTRUCTION: Build a comprehensive database schema matrix mapping out "
+                        f"every physical table and column declaration found in the source code file above."
+                    )
                     source_label = f"Isolated Git Run: {git_url}"
                 else:
-                    payload_text = f"ISOLATED SPECIFICATION Requirements:\n{doc_payload}"
+                    payload_text = (
+                        f"ANALYSIS MODE: Isolated Unstructured Specification Scan\n\n"
+                        f"SECTION 1: COMPLIANCE REQUIREMENTS (from documentation)\n{doc_payload}"
+                    )
                     source_label = f"Isolated Doc Run: {doc_url}"
                 
-                # Run modular evaluation pipeline
+                # Run the modular evaluation pipeline endpoints
                 blueprint = TextExtractor().parse_text(payload_text)
                 evaluated_blueprint = HipaasessmentEngine().analyze_risk(blueprint, env_context)
                 
                 plan_id = ReportStorageEngine().save_to_warehouse(evaluated_blueprint, env_context, source_label)
                 st.success(f"Audit tracking records written under Reference Trace ID #{plan_id}. Navigate to the Reports tab to review.")
                 
+                
             except Exception as e:
                 st.error(f"Ingestion Aborted: Execution pipeline fault occurred: {e}")
 
+# ==============================================================================
+# TAB 2: GOVERNANCE AUDIT LEDGER (The Report Sheet)
+# ==============================================================================
 with tab_ledger:
-    st.markdown(markup["panels"]["ledger_header"])
+    # FIX: Swapped out direct dictionary index lookup for a clean fallback .get() method
+    st.markdown(markup["panels"].get("ledger_header", "### 📊 Governance Compliance Ledger"))
+    
     try:
         plans = supabase.table("design_plans").select("*").order("id", desc=True).execute().data
     except Exception:
         plans = []
+
 
     if plans:
         plan_options = [f"#{p['id']} - {p['project_name']} [{p['env_context']}]" for p in plans]
@@ -111,6 +141,8 @@ with tab_ledger:
             
             for col in columns:
                 tier = col["sensitivity_tier"]
+                
+                # Assign high-contrast status badge labels via html tags
                 if "Highly" in tier:
                     badge = f'<span class="badge-crimson">🔴 HIGH RISK PHI</span>'
                 elif "Moderately" in tier:
@@ -128,6 +160,7 @@ with tab_ledger:
                         st.markdown(f"**Trigger Rule:** {col['hipaa_rule_hit'] or 'N/A'}")
                         st.caption(f"**Evidence Quote:** *\"{col['quote_from_source'] or 'No matching snippet.'}\"*")
                     
+                    # Descriptive human-in-the-loop action controls
                     a1, a2, _ = st.columns([2, 2, 3])
                     a1.button("🤝 Confirm Classification", key=f"ok_{col['id']}", use_container_width=True)
                     a2.button("⚡ Escalate for Legal Review", key=f"esc_{col['id']}", use_container_width=True)
