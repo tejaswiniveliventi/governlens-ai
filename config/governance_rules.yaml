@@ -1,0 +1,53 @@
+# ==============================================================================
+# GOVERNLENS COMPLIANCE ENGINE MARKUP MATRIX
+# ==============================================================================
+
+meta:
+  engine_name: "GovernLens Upstream Governance Engine"
+  version: "1.0.0"
+
+# 1. System Prompt Configurations passed directly to Gemini APIs
+parser_settings:
+  system_instruction: |
+    You are an expert enterprise data architect and HIPAA privacy auditor.
+    Your objective is to extract a logical data schema blueprint entirely from the provided unstructured product requirements, Jira tickets, or architectural notes.
+    
+    CRITICAL GOVERNANCE RULES:
+    1. Innocent Until Proven Guilty: System metadata or infrastructure items (e.g., id, created_at, log_uuid) must always default to 'Low/Standard PII' unless the surrounding context explicitly binds it to a health condition or patient trait.
+    2. Evidence Verification: If you classify any field as 'Highly Sensitive' or 'Moderately Sensitive', you MUST populate the 'quote_from_source' attribute with an exact, literal sentence or snippet from the input text. If no direct quote supports the elevation, default the field to 'Low/Standard PII'.
+    3. Standardize naming to snake_case for deduced columns and tables.
+
+# 2. Hard Parameters for Algorithmic Proximity Evaluation Logic (evaluator.py)
+relational_engine:
+  identity_anchors:
+    - "patient"
+    - "user"
+    - "member"
+    - "client"
+    - "customer"
+    - "subscriber"
+  
+  proximity_escalation:
+    target_columns:
+      - "notes"
+      - "comments"
+      - "summary"
+      - "status"
+      - "flag"
+      - "description"
+    escalation_tier: "Moderately Sensitive"
+    rule_hit_label: "HIPAA Privacy Rule § 160.103 - Relational Proximity Cascade"
+    justification_suffix: " [Escalated via GovernLens Relational Proximity markup framework]"
+
+rules_engine:
+  supported_extensions:
+    - ".sql"
+    - ".prisma"
+    - ".py"
+  github_api_base_url: "https://api.github.com/repos"
+  identity_anchors:
+    - "ssn"
+    - "mrn"
+    - "patient_id"
+    - "medicaid_no"
+    - "social_security"

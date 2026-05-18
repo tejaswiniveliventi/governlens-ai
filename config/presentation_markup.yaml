@@ -1,0 +1,72 @@
+ui:
+  page_title: "GovernLens AI — Enterprise Architecture Governance Gatekeeper"
+  layout: "wide"
+  
+  tabs:
+    input_header: "📥 DATA ASSURANCE INTAKE"
+    report_header: "📋 GOVERNANCE TELEMETRY REPORT"
+
+  dropdowns:
+    environments:
+      - "Healthcare/Clinical App"
+      - "Internal HR/Operations"
+      - "General Marketing/B2C"
+
+  placeholders:
+    repo_ph: "e.g., smart-on-fhir/health-cards"
+    doc_ph: "https://example.com/specifications/intake-feature"
+
+  labels:
+    section_title: "🛡️ GOVERNENS DATA GOVERNANCE"
+    section_subtitle: "Automated Upstream Privacy Guardrail — In-Memory API Inspection Track"
+    input_header_sub: "🔌 Streamlined Remote Telemetry Control"
+    dropdown_context_label: "Target Deployment Domain Environment Context:"
+    repo_input: "Public GitHub Repository Identifier Path (owner/repo):"
+    doc_input: "Public Product Specification URI Link (Confluence / Wiki Portal):"
+    action_button: "🚀 Execute Token-Optimized In-Memory Analysis"
+    empty_inputs_warning: "Operational Gate: Input parameters are missing. Please supply a Git Repository, a Document URL, or both to activate the evaluation engine."
+    strategy_header: "⚙️ Optimized In-Memory Token Strategy"
+    success_msg: "Audit mapping successful! Records committed under Reference ID"
+    ledger_title: "📋 System Evaluation Reports"
+    ledger_subtitle: "Audit structural assets, verify textual context evidence, and manage compliance postures."
+    selector_label: "Choose Selected Schema Audit Trace to Display:"
+    entity_label: "Logical Database Entity:"
+    empty_ledger_msg: "No active architecture scans logged in your remote cloud tables yet."
+    spinner_text: "Processing in-memory tokens and calculating compliance vectors..."
+
+  strategy_alerts:
+    idle: "Provide a GitHub Repository path, a Document URL, or both to activate the evaluation engine pipeline."
+    intersection: "🔗 Active Route: Context-Aware Intersection Scan\n\nThe engine will query the GitHub REST API to scan repository code files directly into memory strings, evaluated strictly filtered by the compliance boundaries of the documentation URL."
+    git_only: "💻 Active Route: Token-Filtered Git Scan\n\nQueries the GitHub REST API directly. Only specific schema structure data fields are pulled to eliminate token waste."
+    doc_only: "📄 Active Route: Isolated Specification Scan\n\nScrapes the documentation target web tree to parse contextual intent for implicit health data paths."
+
+  styling:
+    font_sizes:
+      tab_header_css: |
+        <style>
+          button[data-baseweb="tab"] {
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            height: 55px !important;
+            letter-spacing: 0.5px !important;
+          }
+        </style>
+    css_theme: |
+      <style>
+        .stApp { background-color: #0b0f19; color: #f3f4f6; }
+        h1, h2, h3, h4 { color: #3b82f6 !important; font-family: 'Inter', sans-serif; }
+        div.stButton > button:first-child { 
+          background-color: #f97316 !important; 
+          color: #ffffff !important; 
+          border: none; 
+          font-weight: 600; 
+          border-radius: 6px; 
+          transition: background-color 0.3s ease; 
+        }
+        div.stButton > button:first-child:hover { background-color: #ea580c !important; }
+        div.stAlert { background-color: #1f2937 !important; border-left: 5px solid #3b82f6 !important; color: #f3f4f6 !important; }
+      </style>
+    badges:
+      high: '<span style="background-color: #7f1d1d; color: #fca5a5; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #f87171; display: inline-block;">🔴 HIGH COMPLIANCE RISK</span>'
+      medium: '<span style="background-color: #7c2d12; color: #fdba74; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #fb923c; display: inline-block;">🟡 MODERATE CONTEXTUAL RISK</span>'
+      low: '<span style="background-color: #064e3b; color: #6ee7b7; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #34d399; display: inline-block;">🟢 LOW / OPERATIONALLY SAFE</span>'
