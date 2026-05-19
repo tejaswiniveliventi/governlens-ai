@@ -14,7 +14,7 @@ with open("config/presentation_markup.yaml", "r") as f:
 st.set_page_config(page_title="GovernLens | Control Center", layout="wide")
 
 # Injection of custom theme CSS to override default styling mechanics gracefully
-st.markdown(markup["ui_styles"]["custom_css"], unsafe_allow_html=True)
+st.markdown(f'<style>{markup["ui_styles"]["custom_css"]}</style>', unsafe_allow_html=True)
 st.title(markup["ui_branding"]["title"])
 st.caption(markup["ui_branding"]["caption"])
 st.markdown("---")
